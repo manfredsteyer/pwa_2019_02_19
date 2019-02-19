@@ -5,9 +5,21 @@ let context: any = self;
 
 // Build-DAte: 234243242
 
-self.addEventListener('fetch', (e: any) => {
-  if (e.request.url.includes('index.html')) {
-    e.respondWith(fetch(e.request));
+self.addEventListener('fetch', (event: any) => {
+    console.debug('url', event.request.url);
+  if (event.request.url.includes('index.html')) {
+    event.respondWith(
+        caches.open('myCache').then(function(cache) {
+            return fetch(event.request)
+                .then(function(response) {
+                    cache.put(event.request, response.clone());
+                    return response;
+                })
+                .catch(function() {
+                    return caches.match(event.request);
+                });
+            })
+      );
   }
 });
 
